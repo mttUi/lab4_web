@@ -1,0 +1,13 @@
+{
+    "name": "lab4/conference",
+    "description": "Лабораторная работа №4 - API стран",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Student"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.10"
+    }
+}
