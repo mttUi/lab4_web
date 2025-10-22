@@ -3,7 +3,15 @@ require_once 'ApiClient.php';
 require_once 'UserInfo.php';
 
 $apiClient = new ApiClient();
-$countries = $apiClient->getAllCountries();
+$countriesData = $apiClient->getAllCountries();
+
+// ОБРАБОТКА ОШИБОК
+if (isset($countriesData['error'])) {
+    $error = $countriesData['error'];
+    $countries = [];
+} else {
+    $countries = $countriesData;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -68,16 +76,30 @@ $countries = $apiClient->getAllCountries();
             padding: 20px;
             border-radius: 10px;
             border-left: 4px solid #28a745;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .country-flag {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+        
+        .country-info {
+            flex: 1;
         }
         
         .country-name {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             color: #333;
         }
         
-        .country-info {
+        .country-details {
             font-size: 14px;
             color: #666;
         }
@@ -88,6 +110,24 @@ $countries = $apiClient->getAllCountries();
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
+        }
+        
+        .error {
+            background: #ffe6e6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid #ff4444;
+        }
+        
+        .success {
+            background: #e6ffe6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border-left: 4px solid #28a745;
         }
     </style>
 </head>
@@ -105,16 +145,39 @@ $countries = $apiClient->getAllCountries();
             <p>Данные предоставлены REST Countries API</p>
         </div>
 
+        <?php if (isset($error)): ?>
+            <div class="error">
+                <h3>❌ Ошибка при загрузке данных:</h3>
+                <p><?php echo htmlspecialchars($error); ?></p>
+                <p><small>Используются тестовые данные</small></p>
+            </div>
+        <?php elseif (empty($countries)): ?>
+            <div class="error">
+                <p>Нет данных для отображения</p>
+            </div>
+        <?php else: ?>
+            <div class="success">
+                <p>✅ Данные успешно загружены из API</p>
+            </div>
+        <?php endif; ?>
+
         <div class="countries-grid">
-            <?php foreach(array_slice($countries, 0, 50) as $country): ?>
-                <div class="country-card">
-                    <div class="country-name"><?php echo htmlspecialchars($country['name']); ?></div>
-                    <div class="country-info">
-                        <strong>Столица:</strong> <?php echo htmlspecialchars($country['capital']); ?><br>
-                        <strong>Регион:</strong> <?php echo htmlspecialchars($country['region']); ?><br>
-                        <strong>Население:</strong> <?php echo number_format($country['population']); ?>
+            <?php foreach($countries as $country): ?>
+                <?php if (is_array($country) && isset($country['name'])): ?>
+                    <div class="country-card">
+                        <?php if (!empty($country['flag'])): ?>
+                            <img src="<?php echo htmlspecialchars($country['flag']); ?>" alt="Флаг <?php echo htmlspecialchars($country['name']); ?>" class="country-flag">
+                        <?php endif; ?>
+                        <div class="country-info">
+                            <div class="country-name"><?php echo htmlspecialchars($country['name']); ?></div>
+                            <div class="country-details">
+                                <strong>Столица:</strong> <?php echo htmlspecialchars($country['capital']); ?><br>
+                                <strong>Регион:</strong> <?php echo htmlspecialchars($country['region']); ?><br>
+                                <strong>Население:</strong> <?php echo number_format($country['population']); ?>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     </div>
